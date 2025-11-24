@@ -1,0 +1,12 @@
+[
+  {
+    "id": "dfcd02cb-97e5-4c4a-bb9f-15ddbe7b4b17",
+    "job_id": "cc939d01-6cc3-440b-9ef2-3ff2fd72506f",
+    "resume_id": "8c853ad7-7b89-430a-b9bb-3e3612685b2d",
+    "score": 0.0,
+    "explanation": "Analysis failed: No LLM providers available",
+    "citations": [],
+    "created_at": "2025-11-24 14:57:46.197846",
+    "model_used": "ollama"
+  }
+]

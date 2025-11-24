@@ -1,0 +1,47 @@
+[
+  {
+    "id": "854e4ec5-f4e6-4c9f-b990-c3f1cdd74ad0",
+    "original_filename": "actuary.pdf",
+    "extracted_text": "",
+    "anonymized_text": "",
+    "language": "en",
+    "upload_timestamp": "2025-11-24 17:36:00.411027",
+    "tags": []
+  },
+  {
+    "id": "3245f28d-48dc-4822-ac09-b008dd1d237f",
+    "original_filename": "agri.pdf",
+    "extracted_text": "",
+    "anonymized_text": "",
+    "language": "en",
+    "upload_timestamp": "2025-11-24 17:36:00.738788",
+    "tags": []
+  },
+  {
+    "id": "ead9f422-c4dc-4e83-bf88-5566663aeb82",
+    "original_filename": "cyber.pdf",
+    "extracted_text": "",
+    "anonymized_text": "",
+    "language": "en",
+    "upload_timestamp": "2025-11-24 17:36:01.124022",
+    "tags": []
+  },
+  {
+    "id": "0200f315-97f2-45c4-a8f1-6a901be168e5",
+    "original_filename": "energy.pdf",
+    "extracted_text": "",
+    "anonymized_text": "",
+    "language": "en",
+    "upload_timestamp": "2025-11-24 17:36:01.438814",
+    "tags": []
+  },
+  {
+    "id": "031ac423-2d2c-41c5-88b9-9e0ffee3d621",
+    "original_filename": "legal.pdf",
+    "extracted_text": "",
+    "anonymized_text": "",
+    "language": "en",
+    "upload_timestamp": "2025-11-24 17:36:01.846452",
+    "tags": []
+  }
+]

@@ -1,0 +1,52 @@
+[
+  {
+    "id": "b3721028-f7c4-4023-8ae5-57797100334a",
+    "job_id": "66351e90-953c-483e-a4a6-19c3cbc3a78b",
+    "resume_id": "b462eb79-9248-484e-aed0-a246019644a5",
+    "score": 0.0,
+    "explanation": "Analysis failed: Ollama connection error: timed out",
+    "citations": [],
+    "created_at": "2025-11-24 17:28:19.754717",
+    "model_used": "llama2:7b"
+  },
+  {
+    "id": "48e69430-0da8-45ce-9d89-f3eec82fe50e",
+    "job_id": "66351e90-953c-483e-a4a6-19c3cbc3a78b",
+    "resume_id": "c58c991e-0db1-425b-a62a-5b01165e22db",
+    "score": 0.0,
+    "explanation": "Analysis failed: Ollama connection error: timed out",
+    "citations": [],
+    "created_at": "2025-11-24 17:29:21.511444",
+    "model_used": "llama2:7b"
+  },
+  {
+    "id": "07587e77-0525-422a-8b3e-8d8135128cf1",
+    "job_id": "66351e90-953c-483e-a4a6-19c3cbc3a78b",
+    "resume_id": "48b83ca2-4477-4041-9553-f60c2f4334d3",
+    "score": 0.0,
+    "explanation": "Analysis failed: Ollama connection error: timed out",
+    "citations": [],
+    "created_at": "2025-11-24 17:30:24.991975",
+    "model_used": "llama2:7b"
+  },
+  {
+    "id": "fd1cf872-f41e-463d-8fc6-97224e0bdb68",
+    "job_id": "66351e90-953c-483e-a4a6-19c3cbc3a78b",
+    "resume_id": "02f3822f-5532-4fbe-aef3-aeeb3ddcc369",
+    "score": 0.0,
+    "explanation": "Analysis failed: Ollama connection error: timed out",
+    "citations": [],
+    "created_at": "2025-11-24 17:31:25.724570",
+    "model_used": "llama2:7b"
+  },
+  {
+    "id": "f4e7d837-c2cc-449c-a9a8-bfd01103bf32",
+    "job_id": "66351e90-953c-483e-a4a6-19c3cbc3a78b",
+    "resume_id": "cb48f251-8609-4490-ac8d-2a89b3b7ca7a",
+    "score": 0.0,
+    "explanation": "Analysis failed: Ollama connection error: timed out",
+    "citations": [],
+    "created_at": "2025-11-24 17:32:26.389768",
+    "model_used": "llama2:7b"
+  }
+]

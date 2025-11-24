@@ -1,0 +1,62 @@
+[
+  {
+    "id": "bd3e63a1-9b0e-449a-b21d-20d878993468",
+    "job_id": "76f13281-4a82-407b-b342-d0d19f7236a5",
+    "resume_id": "8c853ad7-7b89-430a-b9bb-3e3612685b2d",
+    "score": 0.0,
+    "explanation": "Analysis failed: No LLM providers available",
+    "citations": [],
+    "created_at": "2025-11-24 15:09:48.136570",
+    "model_used": "ollama"
+  },
+  {
+    "id": "9018fb90-22b0-46d7-a263-78585d111f7c",
+    "job_id": "76f13281-4a82-407b-b342-d0d19f7236a5",
+    "resume_id": "5a1e9c77-f644-49c6-873e-ea040b99295c",
+    "score": 0.0,
+    "explanation": "Analysis failed: No LLM providers available",
+    "citations": [],
+    "created_at": "2025-11-24 15:10:49.003436",
+    "model_used": "ollama"
+  },
+  {
+    "id": "c578c459-cd8e-4a8e-9d8a-81b5ee8a5987",
+    "job_id": "76f13281-4a82-407b-b342-d0d19f7236a5",
+    "resume_id": "9e325a8d-62f8-4079-a569-1940f934dcec",
+    "score": 0.0,
+    "explanation": "Analysis failed: No LLM providers available",
+    "citations": [],
+    "created_at": "2025-11-24 15:12:46.820766",
+    "model_used": "ollama"
+  },
+  {
+    "id": "65cfe917-bf2e-4216-858f-62685386eb09",
+    "job_id": "76f13281-4a82-407b-b342-d0d19f7236a5",
+    "resume_id": "693ae1fe-43db-41aa-b499-5cc20b0684b5",
+    "score": 0.0,
+    "explanation": "Analysis failed: No LLM providers available",
+    "citations": [],
+    "created_at": "2025-11-24 15:14:31.525187",
+    "model_used": "ollama"
+  },
+  {
+    "id": "cdb325e8-e5c7-4134-b45e-b63756a1a794",
+    "job_id": "76f13281-4a82-407b-b342-d0d19f7236a5",
+    "resume_id": "d1a7dd65-35b8-4dcc-babb-9152c0e89e7b",
+    "score": 0.0,
+    "explanation": "Analysis failed: No LLM providers available",
+    "citations": [],
+    "created_at": "2025-11-24 15:15:32.471396",
+    "model_used": "ollama"
+  },
+  {
+    "id": "79574a32-0422-40c9-8c8f-5a573c36cbe9",
+    "job_id": "76f13281-4a82-407b-b342-d0d19f7236a5",
+    "resume_id": "34ae830c-fd44-48f7-a228-29fc7e67b222",
+    "score": 0.0,
+    "explanation": "Analysis failed: No LLM providers available",
+    "citations": [],
+    "created_at": "2025-11-24 15:17:15.821496",
+    "model_used": "ollama"
+  }
+]
