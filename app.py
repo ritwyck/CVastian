@@ -11,7 +11,6 @@ import re
 
 
 #!! sbert similarity scoring for ranking.
-#!! generate interview questions per candidate.
 #!! export data to pdf.
 
 #!! click on resume to show non-anonymized version.
@@ -274,21 +273,21 @@ prompt_options = {
         "- Tools, technologies, domain expertise\n"
         "- Seniority level\n"
         "- Qualifications (degrees, certifications, languages)\n"
-        "Provide bullet summary per candidate. Rank from best to worst."
+        "Provide bullet summary for the three best candidates. Rank from best to worst."
     ),
 
     "Demonstrated Impact and Outcomes": (
         "Assess each candidate's impact:\n"
         "- Measurable results (cost savings, revenue, efficiency, project success)\n"
         "- Career progression, responsibilities, promotions\n"
-        "Provide brief summary per candidate. Rank by impact."
+        "Provide brief summary for the three best candidates. Rank by impact."
     ),
 
     "Core Skills and Competencies": (
         "Evaluate each candidate's skills:\n"
         "- Hard skills (role-specific)\n"
         "- Soft skills (communication, collaboration, stakeholder management, problem-solving, ownership)\n"
-        "Summarize skill fit per candidate. Rank by skills match."
+        "Summarize skill fit for the three best candidates. Rank by skills match."
     ),
 
     "Overall Fit": (
@@ -298,7 +297,7 @@ prompt_options = {
         "- Skills (technical, soft: communication, problem-solving, ownership)\n"
         "- Practical fit (values, work style, stability)\n"
         "For each candidate: 2-3 sentences on suitability (strengths/weaknesses).\n"
-        "Rank all candidates from most to least suitable, with one-sentence rationale per ranking."
+        "Rank the three best candidates, with one-sentence rationale per ranking and 2 interview questions per candidate"
     )
 }
 for keyword, full_prompt_text in prompt_options.items():
