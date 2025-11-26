@@ -270,8 +270,8 @@ def process_resume(resume, candidate_id, temp_dir):
         f"Output anonymized data only.\n\n"
         f"Resume:\n{text}"
     )
-    anonymized_text = call_ollama(prompt)
-
+#    anonymized_text = call_ollama(prompt)
+    anonymized_text = call_gemini(prompt)
     return resume.name, anonymized_text, text, original_file_path
 
 if resume_files:
