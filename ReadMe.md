@@ -1,10 +1,10 @@
-# CVButler: AI-Powered CV Analysis Tool
+# CVastian: AI-Powered CV Analysis Tool
 
-CVButler is a Streamlit-based web application that automates the candidate evaluation process by analyzing job descriptions against multiple resumes using AI models. It provides structured assessments, rankings, and PDF reports to help HR teams make data-driven hiring decisions.
+CVastian is a Streamlit-based web application that automates the candidate evaluation process by analyzing job descriptions against multiple resumes using AI models. It provides structured assessments, rankings, and PDF reports to help HR teams make data-driven hiring decisions.
 
 ## Architecture Overview
 
-CVButler follows a multi-layered architecture designed for scalability, privacy, and cloud deployment:
+CVastian follows a multi-layered architecture designed for scalability, privacy, and cloud deployment:
 
 ### Core Components
 
@@ -97,8 +97,8 @@ CVButler follows a multi-layered architecture designed for scalability, privacy,
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/ritwyck/CVButler.git
-   cd CVButler
+   git clone https://github.com/ritwyck/CVastian.git
+   cd CVastian
    ```
 
 2. **Install Python dependencies**
@@ -144,7 +144,7 @@ CVButler follows a multi-layered architecture designed for scalability, privacy,
 
 ### Production Deployment
 
-CVButler is designed for easy cloud deployment with headless Streamlit configuration.
+CVastian is designed for easy cloud deployment with headless Streamlit configuration.
 
 #### Environment Setup
 
