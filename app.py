@@ -9,12 +9,9 @@ import concurrent.futures
 from tqdm import tqdm
 import re
 
-#!! Context Length: Shorter prompts = faster responses. Keep under 2048 tokens if possible.
-#!! pre process the resume to get faster responses.
 
 #!! sbert similarity scoring for ranking.
 #!! generate interview questions per candidate.
-#!! comparison table for candidates
 #!! export data to pdf.
 
 #!! click on resume to show non-anonymized version.
@@ -176,6 +173,7 @@ if job_file:
         f.write(job_text_concise)
 
     #! ai generated the prompts to follow the best principles of propmt engineering.
+    #! context Length: shorter prompts = faster responses. tried to make the prompt as complete as possible without making it too long.
     #! the prompt is not set up for FrieslandCampina specifically to test the job descriptions from enough real companies with mostly real resumes.
     #! even though the model is running locally, i decided to anonymize the resume data before analysis.
     #! i did it because of the uncertainty around what data the model was trained on.
@@ -183,11 +181,11 @@ if job_file:
 
     if "job_context" not in st.session_state and job_text.strip():
         job_prompt = (
-            f"Read and fully comprehend the following job description. Extract and summarize its key responsibilities, required skills, and desired experience, "
-            f"ensuring the information is clear and concise for HR evaluation. Present the summary in a structured, labeled format with three sections: "
-            f"'Responsibilities': List main tasks and goals. 'Required Skills': List technical, analytical, and interpersonal skills. "
-            f"'Desired Experience': Detail years of experience, industry background, certifications, or education. Organize each section with bullet points for readability. "
-            f"Do not copy text directly; paraphrase for clarity. This structured summary will be used to compare candidate resumes for role fit.\n\n"
+            f"Summarize this job description in three sections:\n"
+            f"1. Responsibilities: Main tasks and goals\n"
+            f"2. Required Skills: Technical, analytical, interpersonal\n"
+            f"3. Desired Experience: Years, industry, certifications, education\n"
+            f"Use bullet points. Paraphrase, don't copy. For candidate comparison.\n\n"
             f"Job Description:\n{job_text}"
         )
 
@@ -221,25 +219,25 @@ def process_resume(resume, candidate_id):
         f.write(text)
 
     prompt = (
-        f"Act as a senior HR recruiter and perform GDPR-compliant anonymization. "
-        f"For the following resume, remove all personal identifiers such as full name, address, phone number, email, date of birth, gender, photo, links to social media, "
-        f"and any other contact details. Assign the candidate reference number: {candidate_id}. "
-        f"Retain job titles, employers, dates, locations (in non-identifiable form, e.g., city only), work experience, education, certifications, and skills. "
-        f"Ensure the output contains only anonymized data or masked placeholders for redacted fields, ready for blind recruitment evaluation. "
+        f"GDPR anonymize resume ID {candidate_id}:\n"
+        f"Remove: name, address, phone, email, DOB, gender, photo, social media\n"
+        f"Keep: job titles, employers, dates, locations (city), experience, education, certs, skills\n"
+        f"Output anonymized data only.\n\n"
         f"Resume:\n{text}"
     )
     anonymized_text = call_ollama(prompt)
 
-    anonymized_txt_path = Path(f"resume_{candidate_id}_anonymized.txt")
-    with open(anonymized_txt_path, "w", encoding="utf-8") as f:
-        f.write(anonymized_text)
-
-    return resume.name, anonymized_text
+    return resume.name, anonymized_text, text
 
 
 if resume_files:
     progress_bar = st.progress(0)
     status_text = st.empty()
+
+    if "anonymized_resumes" not in st.session_state:
+        st.session_state["anonymized_resumes"] = {}
+    if "original_resumes" not in st.session_state:
+        st.session_state["original_resumes"] = {}
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         futures = []
@@ -248,33 +246,61 @@ if resume_files:
             futures.append(executor.submit(
                 process_resume, resume, candidate_id))
 
-        anonymized_resumes = {}
         for i, future in enumerate(concurrent.futures.as_completed(futures)):
-            resume_name, anonymized_text = future.result()
-            anonymized_resumes[resume_name] = anonymized_text
+            resume_name, anonymized_text, original_text = future.result()
+
+            st.session_state["anonymized_resumes"][resume_name] = anonymized_text
+            st.session_state["original_resumes"][resume_name] = original_text
 
             progress = (i + 1) / len(resume_files)
             progress_bar.progress(progress)
             status_text.text(f"Processing resumes: {i+1}/{len(resume_files)}")
-
-    st.session_state["anonymized_resumes"] = anonymized_resumes
 
     progress_bar.empty()
     status_text.empty()
 
     st.text("All Resumes processed.")
 
-st.subheader("Analysis")
 
 #! the solution allows for multiple types of analysis along with a custom prompt option that the user can input.
 #! the prompts would be made more specialized when setting this up for the company.
 
-prompt_options = {
-    "Alignment with Job Requirements": "Act as a senior HR recruiter. For each candidate resume, evaluate the alignment with the job description focusing on: Matching responsibilities, Relevant tools, technologies, and domain expertise. Appropriate seniority level. Meeting required qualifications such as degrees, certifications, languages. Provide a concise bullet summary per candidate and rank all candidates from best to worst alignment.",
-    "Demonstrated Impact and Outcomes": "Act as a senior HR recruiter. For each candidate resume, assess the evidence of measurable results such as cost savings, revenue growth, efficiency improvements, and successful project delivery. Consider career progression, increased responsibilities, and promotions. Provide a brief summary for each candidate and rank them based on demonstrated impact.",
-    "Core Skills and Competencies": "Act as a senior HR recruiter. For each candidate resume, evaluate role-specific hard skills and relevant soft skills like communication, collaboration, stakeholder management, problem-solving, and ownership. Summarize the skill fit per candidate and rank candidates according to skills match.",
-    "Overall Fit": "Act as a senior HR recruiter evaluating candidate resumes against a given job description analysis. For each candidate, assess overall fit by considering: Alignment with job responsibilities, tools/technologies, domain expertise, seniority level, and qualifications (degrees, certifications, languages, work authorization). Demonstrated impact and outcomes such as measurable achievements and career progression. Core technical and transferable soft skills including communication, problem-solving, and ownership. Practical fit including values, work style, availability, and stability. For each candidate, provide 2-3 sentences explaining their overall suitability, with strengths and weaknesses. Then produce a final ranked list of all candidates from most to least suitable for the role, with a one-sentence rationale for each candidate’s ranking."}
+st.subheader("Analysis")
 
+prompt_options = {
+    "Alignment with Job Requirements": (
+        "Evaluate each candidate's job alignment:\n"
+        "- Responsibilities match\n"
+        "- Tools, technologies, domain expertise\n"
+        "- Seniority level\n"
+        "- Qualifications (degrees, certifications, languages)\n"
+        "Provide bullet summary per candidate. Rank from best to worst."
+    ),
+
+    "Demonstrated Impact and Outcomes": (
+        "Assess each candidate's impact:\n"
+        "- Measurable results (cost savings, revenue, efficiency, project success)\n"
+        "- Career progression, responsibilities, promotions\n"
+        "Provide brief summary per candidate. Rank by impact."
+    ),
+
+    "Core Skills and Competencies": (
+        "Evaluate each candidate's skills:\n"
+        "- Hard skills (role-specific)\n"
+        "- Soft skills (communication, collaboration, stakeholder management, problem-solving, ownership)\n"
+        "Summarize skill fit per candidate. Rank by skills match."
+    ),
+
+    "Overall Fit": (
+        "Assess each candidate's overall fit:\n"
+        "- Job alignment (responsibilities, tools/tech, domain, experience, qualifications)\n"
+        "- Impact (achievements, career progression)\n"
+        "- Skills (technical, soft: communication, problem-solving, ownership)\n"
+        "- Practical fit (values, work style, stability)\n"
+        "For each candidate: 2-3 sentences on suitability (strengths/weaknesses).\n"
+        "Rank all candidates from most to least suitable, with one-sentence rationale per ranking."
+    )
+}
 for keyword, full_prompt_text in prompt_options.items():
     if st.button(f"{keyword}"):
         if "job_context" not in st.session_state or not st.session_state["anonymized_resumes"]:
