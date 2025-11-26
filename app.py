@@ -7,17 +7,19 @@ import requests
 from bs4 import BeautifulSoup
 import concurrent.futures
 from tqdm import tqdm
+import re
 
-#!! convert everything to .txt
 #!! Context Length: Shorter prompts = faster responses. Keep under 2048 tokens if possible.
-#!! language support would be nice.
+#!! pre process the resume to get faster responses.
+
 #!! sbert similarity scoring for ranking.
 #!! generate interview questions per candidate.
 #!! comparison table for candidates
 #!! export data to pdf.
-#!! pre process job description and the resume to get faster responses.
+
 #!! click on resume to show non-anonymized version.
 #!! visualise ranking with bar chart.
+
 
 #! gemma3 model is being used here, the best that my hardware could support.
 #! attempted using larger models but ran into issues.
@@ -32,6 +34,99 @@ model_config = {
     "temperature": 0.2,
     "repeat_penalty": 1.15
 }
+
+#! adding a pre-procesing step to make job description more concise. this should make the analysis faster by making the prompt smaller.
+#! decided against pre-processing resumes as they are generally concise already.
+#! if the pre-processing step negatively affects a candidate's evaluation, then that would be unfair.
+#! pre-processing job description would impact all candidates equally.
+
+
+def preprocess_job_text(text):
+    """Preprocess job description text to make it more concise while preserving context."""
+    text = ' '.join(text.split())
+
+    sentences = text.split('. ')
+    filtered_sentences = []
+
+    filler_words = [
+        "the", "a", "an", "and", "or", "but", "in", "on", "at", "to", "for",
+        "with", "by", "from", "of", "as", "is", "are", "was", "were", "be",
+        "been", "being", "have", "has", "had", "do", "does", "did", "will",
+        "would", "could", "should", "may", "might", "must", "can", "this",
+        "that", "these", "those", "just", "only", "really", "very", "quite",
+        "also", "then", "now", "well", "so", "however", "therefore",
+        "furthermore", "moreover", "nevertheless", "nonetheless", "thus",
+        "hence", "accordingly", "consequently", "meanwhile", "otherwise",
+        "besides", "anyway", "anyhow", "incidentally", "naturally", "certainly",
+        "definitely", "probably", "possibly", "perhaps", "maybe", "generally",
+        "usually", "typically", "normally", "commonly", "regularly", "sometimes",
+        "occasionally", "often", "frequently", "rarely", "seldom", "hardly",
+        "scarcely", "barely", "almost", "nearly", "approximately", "roughly",
+        "about", "around", "like", "such", "etc", "etcetera", "including",
+        "along", "among", "upon", "within", "without", "toward", "towards",
+        "against", "during", "since", "until", "after", "before", "because",
+        "though", "although", "while", "whereas", "whether", "if", "unless",
+        "until", "till", "once", "whenever", "wherever", "whoever", "whichever",
+        "whatever", "whenever", "however", "howsoever", "whenever", "wherever",
+        "whysoever", "whatsoever", "whosoever", "whomsoever", "whosesoever"
+    ]
+
+    for sentence in sentences:
+        sentence_lower = sentence.lower()
+
+        if len(sentence.split()) < 3:
+            continue
+
+        if filtered_sentences and sentence.strip() == filtered_sentences[-1].strip():
+            continue
+
+        sentence = re.sub(r'([!?.]){2,}', r'\1', sentence)
+
+        sentence = re.sub(r'^[\s\-\*•]+(\d+\.?)?\s*', '', sentence)
+
+        filler_phrases = [
+            "we are looking for", "the ideal candidate", "in this role",
+            "you will be responsible", "what you'll do", "your responsibilities",
+            "equal opportunity employer", "eeo statement", "diversity and inclusion",
+            "about the company", "our company", "who we are", "company culture",
+            "benefits and perks", "what we offer", "compensation and benefits",
+            "how to apply", "application process", "contact information", "travel requirements"
+        ]
+        for phrase in filler_phrases:
+            if phrase in sentence_lower:
+                sentence = sentence.replace(phrase, "", 1).strip()
+                if sentence:
+                    sentence = sentence[0].upper() + sentence[1:]
+
+        words = sentence.split()
+        filtered_words = []
+
+        for i, word in enumerate(words):
+            word_lower = word.lower().strip(".,!?;:\"'()[]{}")
+
+            if word_lower in filler_words:
+                if word_lower in ["and", "or", "but"] and i > 0 and i < len(words) - 1:
+                    filtered_words.append(word)
+                elif word_lower in ["with", "from", "to", "for"] and i > 0:
+                    filtered_words.append(word)
+                else:
+                    continue
+            else:
+                filtered_words.append(word)
+
+        if filtered_words:
+            sentence = ' '.join(filtered_words)
+
+        if sentence.strip():
+            filtered_sentences.append(sentence)
+
+    concise_text = '. '.join(filtered_sentences)
+
+    concise_text = re.sub(r'\s+', ' ', concise_text)
+    concise_text = re.sub(r'\.([A-Za-z])', r'. \1', concise_text)
+
+    return concise_text
+
 
 st.title("CV Butler")
 
@@ -73,6 +168,12 @@ if job_file:
     txt_path = Path("job_description.txt")
     with open(txt_path, "w", encoding="utf-8") as f:
         f.write(job_text)
+
+    job_text_concise = preprocess_job_text(job_text)
+
+    txt_concise_path = Path("job_description_concise.txt")
+    with open(txt_concise_path, "w", encoding="utf-8") as f:
+        f.write(job_text_concise)
 
     #! ai generated the prompts to follow the best principles of propmt engineering.
     #! the prompt is not set up for FrieslandCampina specifically to test the job descriptions from enough real companies with mostly real resumes.
