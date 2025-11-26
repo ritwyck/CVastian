@@ -46,11 +46,14 @@ def call_ollama(prompt, model="gemma3:4b"):
     resp = requests.post("http://localhost:11434/api/generate", json=payload)
     return resp.json().get("response", "")
 
+ #! file had to be converted to .txt from html because ollama model works best with plain text input.
+    #! this also explains why the ascii encoding step was needed.
+    #! initially converted to pdf but then optimised the process.
+
 
 job_file = st.file_uploader("Upload Job Description", type=["html"])
 job_text = ""
 if job_file:
-
     file_bytes = job_file.read()
     text_html = file_bytes.decode("utf-8")
 
@@ -64,25 +67,18 @@ if job_file:
     with open(clean_html_path, "w", encoding="utf-8") as f:
         f.write(text_html_clean)
 
-    #! file had to be converted to pdf from html because ollama model was not reacting well to html input.
-    #! this also explains why the ascii encoding step was needed.
-    #! no reason to have picked pdf output.
-    #! due to time constraints, i did not explore the issue further and bootstrapped with this solution.
-    #! i considered allowing pdf upload directly from user, but i decided to keep the ux streamlined.
-
-    output_pdf = Path("job_description.pdf")
-    try:
-        pypandoc.convert_file(str(clean_html_path), 'pdf',
-                              outputfile=str(output_pdf))
-
-    except Exception as e:
-        st.error(f"The job description is not in the desired format: {e}")
-
     soup = BeautifulSoup(text_html_clean, "html.parser")
     job_text = soup.get_text(separator="\n")
 
+    txt_path = Path("job_description.txt")
+    with open(txt_path, "w", encoding="utf-8") as f:
+        f.write(job_text)
+
     #! ai generated the prompts to follow the best principles of propmt engineering.
     #! the prompt is not set up for FrieslandCampina specifically to test the job descriptions from enough real companies with mostly real resumes.
+    #! even though the model is running locally, i decided to anonymize the resume data before analysis.
+    #! i did it because of the uncertainty around what data the model was trained on.
+    #! i wanted to make sure that the analysis did not get influenced by personal data.
 
     if "job_context" not in st.session_state and job_text.strip():
         job_prompt = (
@@ -100,13 +96,11 @@ if job_file:
 
     st.text("Job Description processed.")
 
+#! introduced batch processing to make the ux smoother and converted resume to txt as well.
+
 resume_files = st.file_uploader(
     "Upload Resumes", type=["pdf", "docx"], accept_multiple_files=True
 )
-
-#! even though the model is running locally, i decided to anonymize the resume data before analysis.
-#! i did it because of the uncertainty around what data the model was trained on.
-#! i wanted to make sure that the analysis did not get influenced by personal data.
 
 
 def process_resume(resume, candidate_id):
@@ -121,6 +115,10 @@ def process_resume(resume, candidate_id):
     else:
         text = ""
 
+    txt_path = Path(f"resume_{candidate_id}_original.txt")
+    with open(txt_path, "w", encoding="utf-8") as f:
+        f.write(text)
+
     prompt = (
         f"Act as a senior HR recruiter and perform GDPR-compliant anonymization. "
         f"For the following resume, remove all personal identifiers such as full name, address, phone number, email, date of birth, gender, photo, links to social media, "
@@ -130,9 +128,12 @@ def process_resume(resume, candidate_id):
         f"Resume:\n{text}"
     )
     anonymized_text = call_ollama(prompt)
-    return resume.name, anonymized_text
 
-#! introduced batch processing to make the ux smoother
+    anonymized_txt_path = Path(f"resume_{candidate_id}_anonymized.txt")
+    with open(anonymized_txt_path, "w", encoding="utf-8") as f:
+        f.write(anonymized_text)
+
+    return resume.name, anonymized_text
 
 
 if resume_files:
