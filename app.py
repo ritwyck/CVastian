@@ -36,7 +36,6 @@ load_dotenv()
 
 
 #! model configuration for better responses.
-
 model_config = {
     "temperature": 0.2,
     "repeat_penalty": 1.15
@@ -175,10 +174,8 @@ if "original_resumes" not in st.session_state:
     st.session_state["original_resumes"] = {}
 if "resume_names" not in st.session_state:
     st.session_state["resume_names"] = {}
-if "original_file_paths" not in st.session_state:
-    st.session_state["original_file_paths"] = {}
-if "temp_dir" not in st.session_state:
-    st.session_state["temp_dir"] = tempfile.mkdtemp()
+if "original_file_data" not in st.session_state:
+    st.session_state["original_file_data"] = {}
 
 job_file = st.file_uploader("Upload Job Description", type=["html"])
 job_text = ""
@@ -186,27 +183,32 @@ if job_file:
     file_bytes = job_file.read()
     text_html = file_bytes.decode("utf-8")
 
-    job_path = Path("job_description.html")
-    with open(job_path, "wb") as f:
-        f.write(file_bytes)
+    #! removed file writing operations for cloud compatibility
+    # job_path = Path("job_description.html")
+    # with open(job_path, "wb") as f:
+    #     f.write(file_bytes)
 
     text_html_clean = text_html.encode('ascii', errors='ignore').decode('utf-8')
-    clean_html_path = Path("job_description_clean.html")
-    with open(clean_html_path, "w", encoding="utf-8") as f:
-        f.write(text_html_clean)
+    
+    #! removed file writing operations for cloud compatibility
+    # clean_html_path = Path("job_description_clean.html")
+    # with open(clean_html_path, "w", encoding="utf-8") as f:
+    #     f.write(text_html_clean)
 
     soup = BeautifulSoup(text_html_clean, "html.parser")
     job_text = soup.get_text(separator="\n")
 
-    txt_path = Path("job_description.txt")
-    with open(txt_path, "w", encoding="utf-8") as f:
-        f.write(job_text)
+    #! removed file writing operations for cloud compatibility
+    # txt_path = Path("job_description.txt")
+    # with open(txt_path, "w", encoding="utf-8") as f:
+    #     f.write(job_text)
 
     job_text_concise = preprocess_job_text(job_text)
 
-    txt_concise_path = Path("job_description_concise.txt")
-    with open(txt_concise_path, "w", encoding="utf-8") as f:
-        f.write(job_text_concise)
+    #! removed file writing operations for cloud compatibility
+    # txt_concise_path = Path("job_description_concise.txt")
+    # with open(txt_concise_path, "w", encoding="utf-8") as f:
+    #     f.write(job_text_concise)
 
     #! ai generated the prompts to follow the best principles of propmt engineering.
     #! context Length: shorter prompts = faster responses. tried to make the prompt as complete as possible without making it too long.
@@ -229,7 +231,10 @@ if job_file:
     with st.spinner("Analyzing job description..."):
         if gemini_configured:
             job_summary = call_gemini(job_prompt)
-     
+      #  else:
+          #  st.warning("Gemini API not configured. Using local model instead.")
+            #job_summary = call_ollama(job_prompt)
+            
         if not job_summary:
             st.error("Failed to get job summary from any model.")
             
@@ -242,7 +247,8 @@ if job_file:
 
 resume_files = st.file_uploader(
     "Upload Resumes", type=["pdf", "docx"], accept_multiple_files=True)
-# Replace your process_resume function with this version
+
+#! modified process_resume function to work without temporary files
 def process_resume(resume, candidate_id):
     # Extract text from resume
     if resume.name.endswith(".pdf"):
@@ -267,10 +273,15 @@ def process_resume(resume, candidate_id):
         f"Resume:\n{text}"
     )
     
-    anonymized_text = call_gemini(prompt)
+    # Use Gemini for anonymization if configured, otherwise use Ollama
+    if gemini_configured:
+        anonymized_text = call_gemini(prompt)
+    #else:
+       # anonymized_text = call_ollama(prompt)
+        
     return resume.name, anonymized_text, text, file_data
 
-# Update your resume processing section
+#! modified resume processing section to work without temporary files
 if resume_files:
     progress_bar = st.progress(0)
     status_text = st.empty()
@@ -279,7 +290,6 @@ if resume_files:
         futures = []
         for i, resume in enumerate(resume_files):
             candidate_id = f"Candidate{i+1:03d}"
-            # No temp_dir parameter needed
             futures.append(executor.submit(process_resume, resume, candidate_id))
         
         for i, future in enumerate(concurrent.futures.as_completed(futures)):
@@ -289,7 +299,6 @@ if resume_files:
             st.session_state["anonymized_resumes"][candidate_id] = anonymized_text
             st.session_state["original_resumes"][candidate_id] = original_text
             st.session_state["resume_names"][candidate_id] = resume_name
-            # Store file data instead of file path
             st.session_state["original_file_data"][candidate_id] = file_data
             
             progress = (i + 1) / len(resume_files)
@@ -300,7 +309,7 @@ if resume_files:
     status_text.empty()
     st.text("All Resumes processed.")
 
-# Update your display section
+#! modified display section to use session state instead of file paths
 if st.session_state["anonymized_resumes"]:
     st.subheader("Uploaded Resumes")
     
@@ -321,10 +330,6 @@ if st.session_state["anonymized_resumes"]:
                     file_name=resume_name,
                     mime="application/octet-stream"
                 )
-
-# Add this to your session state initialization at the top
-if "original_file_data" not in st.session_state:
-    st.session_state["original_file_data"] = {}
 
 st.subheader("Analysis")
 
@@ -374,6 +379,10 @@ for keyword, full_prompt_text in prompt_options.items():
             st.warning("Please upload and process both job description and resumes first.")
         else:
             with st.spinner(f"Running analysis..."):
+                # Debug: Check what's in session state
+                st.write("Debug: Job context exists:", bool(st.session_state["job_context"]))
+                st.write("Debug: Number of anonymized resumes:", len(st.session_state["anonymized_resumes"]))
+                
                 combined_resumes_text = "\n\n".join(
                     f"{candidate_id}:\n{text}"
                     for candidate_id, text in st.session_state["anonymized_resumes"].items()
@@ -385,9 +394,16 @@ for keyword, full_prompt_text in prompt_options.items():
                     f"Instruction:\n{full_prompt_text}"
                 )
 
+                # Debug: Show the prompt being sent
+                st.write("Debug: Prompt length:", len(full_prompt))
+                
                 if gemini_configured:
                     final_result = call_gemini(full_prompt)
-              
+                #else:
+                    #final_result = call_ollama(full_prompt)
+                
+                # Debug: Show the result
+                st.write("Debug: Result length:", len(final_result) if final_result else 0)
 
             st.text_area(f"{keyword} Analysis Result", value=final_result, height=300)
 
@@ -433,7 +449,8 @@ if st.button("Send"):
             with st.spinner("Generating response..."):
                 if gemini_configured:
                     result = call_gemini(full_prompt)
-               
+                #else:
+                 #   result = call_ollama(full_prompt)
 
             st.text_area("Custom Analysis Result", value=result, height=300)
 
