@@ -242,12 +242,9 @@ if job_file:
 
 resume_files = st.file_uploader(
     "Upload Resumes", type=["pdf", "docx"], accept_multiple_files=True)
-
-def process_resume(resume, candidate_id, temp_dir):
-    original_file_path = os.path.join(temp_dir, f"{candidate_id}_original{Path(resume.name).suffix}")
-    with open(original_file_path, "wb") as f:
-        f.write(resume.getvalue())
-    
+# Replace your process_resume function with this version
+def process_resume(resume, candidate_id):
+    # Extract text from resume
     if resume.name.endswith(".pdf"):
         text = ""
         with pdfplumber.open(resume) as pdf:
@@ -259,10 +256,9 @@ def process_resume(resume, candidate_id, temp_dir):
     else:
         text = ""
 
-    txt_path = os.path.join(temp_dir, f"resume_{candidate_id}_original.txt")
-    with open(txt_path, "w", encoding="utf-8") as f:
-        f.write(text)
-
+    # Store file data in memory instead of writing to disk
+    file_data = resume.getvalue()
+    
     prompt = (
         f"GDPR anonymize resume ID {candidate_id}:\n"
         f"Remove: name, address, phone, email, DOB, gender, photo, social media\n"
@@ -270,63 +266,65 @@ def process_resume(resume, candidate_id, temp_dir):
         f"Output anonymized data only.\n\n"
         f"Resume:\n{text}"
     )
-#    anonymized_text = call_ollama(prompt)
+    
     anonymized_text = call_gemini(prompt)
-    return resume.name, anonymized_text, text, original_file_path
+    return resume.name, anonymized_text, text, file_data
 
+# Update your resume processing section
 if resume_files:
     progress_bar = st.progress(0)
     status_text = st.empty()
-
-    temp_dir = st.session_state["temp_dir"]
     
     with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
         futures = []
         for i, resume in enumerate(resume_files):
             candidate_id = f"Candidate{i+1:03d}"
-            futures.append(executor.submit(
-                process_resume, resume, candidate_id, temp_dir))
-
+            # No temp_dir parameter needed
+            futures.append(executor.submit(process_resume, resume, candidate_id))
+        
         for i, future in enumerate(concurrent.futures.as_completed(futures)):
-            resume_name, anonymized_text, original_text, original_file_path = future.result()
+            resume_name, anonymized_text, original_text, file_data = future.result()
             candidate_id = f"Candidate{i+1:03d}"
-
+            
             st.session_state["anonymized_resumes"][candidate_id] = anonymized_text
             st.session_state["original_resumes"][candidate_id] = original_text
             st.session_state["resume_names"][candidate_id] = resume_name
-            st.session_state["original_file_paths"][candidate_id] = original_file_path
-
+            # Store file data instead of file path
+            st.session_state["original_file_data"][candidate_id] = file_data
+            
             progress = (i + 1) / len(resume_files)
             progress_bar.progress(progress)
             status_text.text(f"Processing resumes: {i+1}/{len(resume_files)}")
-
+    
     progress_bar.empty()
     status_text.empty()
-
     st.text("All Resumes processed.")
 
+# Update your display section
 if st.session_state["anonymized_resumes"]:
     st.subheader("Uploaded Resumes")
-
+    
     for candidate_id in sorted(st.session_state["anonymized_resumes"].keys()):
         resume_name = st.session_state["resume_names"][candidate_id]
         
         with st.expander(f"{candidate_id} - {resume_name}"):
             st.write("**Anonymized Version:**")
             st.write(st.session_state["anonymized_resumes"][candidate_id])
-
+            
             if st.button(f"Show Non-Anonymized Version for {candidate_id}"):
-                original_file_path = st.session_state["original_file_paths"][candidate_id]
-                
-                with open(original_file_path, "rb") as f:
-                    file_data = f.read()
+                # Get file data from session state instead of reading from disk
+                file_data = st.session_state["original_file_data"][candidate_id]
                 
                 st.download_button(
-                    label=f"Download Original {Path(original_file_path).suffix.upper()} File",
+                    label=f"Download Original {Path(resume_name).suffix.upper()} File",
                     data=file_data,
                     file_name=resume_name,
                     mime="application/octet-stream"
                 )
+
+# Add this to your session state initialization at the top
+if "original_file_data" not in st.session_state:
+    st.session_state["original_file_data"] = {}
 
 st.subheader("Analysis")
 
