@@ -1,19 +1,3 @@
-import streamlit as st
-from pathlib import Path
-from docx import Document
-import pypandoc
-import requests
-from bs4 import BeautifulSoup
-import concurrent.futures
-from tqdm import tqdm
-import re
-import tempfile
-import os
-from fpdf import FPDF
-import datetime
-import io
-import google.generativeai as genai
-from dotenv import load_dotenv
 
 load_dotenv()
 
