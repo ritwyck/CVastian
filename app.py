@@ -1,6 +1,5 @@
 import streamlit as st
 from pathlib import Path
-import pdfplumber
 from docx import Document
 import pypandoc
 import requests
